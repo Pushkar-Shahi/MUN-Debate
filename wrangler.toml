@@ -1,0 +1,29 @@
+name = "mun-debate-central"
+main = "worker/index.ts"
+compatibility_date = "2024-09-23"
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "mun-debate-central-db"
+database_id = "YOUR_D1_DATABASE_ID"
+migrations_dir = "migrations"
+
+# Cron triggers for scheduled ingestion and notifications
+[triggers]
+crons = ["0 */6 * * *"]  # Every 6 hours
+
+# Environment variables
+[vars]
+ENVIRONMENT = "production"
+
+# Dev environment
+[env.dev]
+name = "mun-debate-central-dev"
+[env.dev.vars]
+ENVIRONMENT = "development"
+[[env.dev.d1_databases]]
+binding = "DB"
+database_name = "mun-debate-central-db-dev"
+database_id = "YOUR_DEV_D1_DATABASE_ID"
+migrations_dir = "migrations"
