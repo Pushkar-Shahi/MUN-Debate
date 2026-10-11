@@ -4,16 +4,17 @@
 
 import { useState, useEffect } from 'react';
 import {
-  Settings, Save, Sliders, Bell, MapPin, DollarSign, Database,
-  Check, RefreshCw, Download,
+  Settings, Save, MapPin, Check, Sun, Moon,
 } from 'lucide-react';
 import { usePreferences, useUpdatePreferences } from '../hooks';
+import { useTheme } from '../context/ThemeContext';
 import type { EventCategory, EventMode, EligibilityCategory } from '../types';
 import { CATEGORY_LABELS, LOCATION_PRESETS } from '../types';
 
 export function SettingsPage() {
   const { data: prefs, isLoading } = usePreferences();
   const updatePrefs = useUpdatePreferences();
+  const { theme, setTheme } = useTheme();
 
   const [formData, setFormData] = useState({
     preferred_categories: [] as EventCategory[],
@@ -132,6 +133,84 @@ export function SettingsPage() {
                 </button>
               );
             })}
+          </div>
+        </div>
+
+        {/* Appearance & Theme */}
+        <div className="card" style={{ padding: '24px', background: 'var(--color-bg-secondary)', borderRadius: '16px' }}>
+          <h2 style={{ fontSize: '1.05rem', fontWeight: 700, color: 'var(--color-text-primary)', marginBottom: '4px' }}>
+            Appearance & Theme
+          </h2>
+          <p style={{ fontSize: '0.78rem', color: 'var(--color-text-secondary)', marginBottom: '16px' }}>
+            Select your preferred display theme. Easily switch any time using the header toggle.
+          </p>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+            <div
+              className="card card-clickable"
+              onClick={() => {
+                setTheme('dark');
+                setFormData({ ...formData, theme: 'dark' });
+              }}
+              style={{
+                background: theme === 'dark' ? 'rgba(99, 102, 241, 0.12)' : 'var(--color-bg-tertiary)',
+                borderColor: theme === 'dark' ? 'var(--color-accent-primary)' : 'var(--color-border-primary)',
+                padding: '16px 20px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#0f0f12', border: '1px solid #2a2a36', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Moon size={20} color="#818cf8" />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--color-text-primary)' }}>
+                  Dark Mode
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--color-text-secondary)' }}>
+                  Deep slate & OLED contrast
+                </div>
+              </div>
+              {theme === 'dark' && (
+                <Check size={18} color="var(--color-accent-primary)" style={{ marginLeft: 'auto' }} />
+              )}
+            </div>
+
+            <div
+              className="card card-clickable"
+              onClick={() => {
+                setTheme('light');
+                setFormData({ ...formData, theme: 'light' });
+              }}
+              style={{
+                background: theme === 'light' ? 'rgba(79, 70, 229, 0.08)' : 'var(--color-bg-tertiary)',
+                borderColor: theme === 'light' ? 'var(--color-accent-primary)' : 'var(--color-border-primary)',
+                padding: '16px 20px',
+                borderRadius: '12px',
+                display: 'flex',
+                alignItems: 'center',
+                gap: '14px',
+                cursor: 'pointer',
+              }}
+            >
+              <div style={{ width: '38px', height: '38px', borderRadius: '10px', background: '#ffffff', border: '1px solid #cbd5e1', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <Sun size={20} color="#f59e0b" />
+              </div>
+              <div>
+                <div style={{ fontWeight: 700, fontSize: '0.92rem', color: 'var(--color-text-primary)' }}>
+                  Light Mode
+                </div>
+                <div style={{ fontSize: '0.74rem', color: 'var(--color-text-secondary)' }}>
+                  Crisp clean high contrast
+                </div>
+              </div>
+              {theme === 'light' && (
+                <Check size={18} color="var(--color-accent-primary)" style={{ marginLeft: 'auto' }} />
+              )}
+            </div>
           </div>
         </div>
 

@@ -5,9 +5,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Search, Bell, Plus, Menu, X, ChevronDown,
+  Search, Bell, Plus, Menu, X, ChevronDown, Sun, Moon,
 } from 'lucide-react';
 import { useNotifications, useMarkNotificationRead } from '../../hooks';
+import { useTheme } from '../../context/ThemeContext';
 import { formatRelative } from '../../utils';
 
 interface TopBarProps {
@@ -17,6 +18,7 @@ interface TopBarProps {
 
 export function TopBar({ onMenuToggle, onAddEvent }: TopBarProps) {
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [searchValue, setSearchValue] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const { data: notifData } = useNotifications();
@@ -74,6 +76,16 @@ export function TopBar({ onMenuToggle, onAddEvent }: TopBarProps) {
       </form>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginLeft: 'auto' }}>
+        <button
+          className="btn btn-ghost btn-icon"
+          onClick={toggleTheme}
+          title={theme === 'dark' ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+          id="theme-toggle-btn"
+          aria-label="Toggle theme mode"
+        >
+          {theme === 'dark' ? <Sun size={19} color="#f59e0b" /> : <Moon size={19} color="#6366f1" />}
+        </button>
+
         <button className="btn btn-primary btn-sm" onClick={onAddEvent} id="add-event-btn">
           <Plus size={16} /> Add Event
         </button>
