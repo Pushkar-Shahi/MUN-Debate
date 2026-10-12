@@ -249,7 +249,7 @@ export function SettingsPage() {
                 Minimum Deadline Alert Window
               </label>
               <select
-                className="input"
+                className="form-select"
                 value={formData.min_notice_days}
                 onChange={e => setFormData({ ...formData, min_notice_days: parseInt(e.target.value) })}
               >

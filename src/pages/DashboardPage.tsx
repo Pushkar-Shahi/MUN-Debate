@@ -38,7 +38,7 @@ export function DashboardPage() {
       {/* Welcome Banner */}
       <div
         style={{
-          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, rgba(22, 22, 29, 0.9) 100%)',
+          background: 'linear-gradient(135deg, rgba(99, 102, 241, 0.15) 0%, rgba(139, 92, 246, 0.08) 50%, var(--color-banner-gradient-end) 100%)',
           border: '1px solid var(--color-border-accent)',
           borderRadius: '16px',
           padding: '24px 28px',

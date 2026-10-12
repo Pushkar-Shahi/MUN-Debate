@@ -50,18 +50,36 @@ MUN & Debate Central eliminates the friction of manually visiting dozens of circ
 
 ---
 
+### 7. **Authentication & User Profiles**
+- **Dynamic Auth System (`/login`)**: Complete sign-in & sign-up flows with persistent session management (`localStorage`).
+- **Demo Account Shortcut**: Instant one-click "Fill Demo Account" credentials (`demo@muncentral.io` / `password123`) for effortless trial and testing.
+- **Protected Routes**: Secure navigation guarding personal trackers, applications, notes, and preferences.
+- **User Profile Menu**: Quick access in TopBar and Sidebar with profile details and clean sign-out.
+
+### 8. **Dual Theme Engine (Dark & Light Modes)**
+- **Curated High-Contrast Palettes**: True dark mode (`#0f0f12`) and sleek modern light mode (`#f8fafc`) with zero visual contrast hiccups.
+- **Instant Toggle**: Sun ☀️ / Moon 🌙 button in TopBar, plus interactive theme selector cards in Settings.
+- **Theme Persistence & Auto Detection**: Remembers preference via `localStorage` and respects system `prefers-color-scheme`.
+
+### 9. **All-Device Mobile Optimization**
+- **Responsive Navigation**: Collapsible desktop sidebar with smooth transition to overlay mobile drawer with quick close.
+- **Adaptive Breakpoints**: Refined views for 375px/390px mobile screens, 768px/1024px tablets, and wide monitors.
+- **Mobile Action Header**: Compact global search, touch-friendly notification drawer, and mobile menu toggles.
+
+---
+
 ## 🛠 Tech Stack & Architecture
 
 - **Frontend**:
   - React 19 + TypeScript
   - Vite 8
   - `@tanstack/react-query` for asynchronous state management & cache invalidation
-  - `react-router-dom` for client-side routing
+  - `react-router-dom` for client-side routing and protected routes
   - `lucide-react` for modern iconography
   - `date-fns` for countdown calculations and calendar interval helpers
-  - Custom dark-mode design system with responsive CSS tokens
+  - Dynamic Dual Theme CSS system (Dark & Light mode variables)
 - **Backend & Database**:
-  - **Cloudflare Workers**: High-performance edge API handler (`worker/index.ts`)
+  - **Cloudflare Workers with Static Assets (`[assets]`)**: Edge API routes and SPA routing handler (`worker/index.ts`)
   - **Cloudflare D1**: Serverless relational SQLite database (`migrations/0001_initial_schema.sql`, `migrations/0002_seed_sources.sql`)
   - **Scheduled Triggers (Cron)**: Background deadline scanning and notification generation
 - **Client Storage Engine**:
@@ -90,6 +108,7 @@ npm run dev
 ```
 
 Open [http://localhost:5173](http://localhost:5173) in your browser.
+- Log in using your email/password, or click **"Fill Demo Account"** to test with `demo@muncentral.io` / `password123`.
 
 ### Building for Production
 
@@ -103,29 +122,33 @@ The production output will be generated in `dist/`.
 
 ## ☁️ Deploying to Cloudflare
 
-### 1. Cloudflare D1 Database Setup
+The project supports both **Cloudflare Workers + Static Assets** (unified single deployment) and **Cloudflare Pages**.
 
-```bash
-# Login to Cloudflare
-npx wrangler login
+### Unified Cloudflare Worker + Static Assets (Recommended)
 
-# Create D1 database
-npx wrangler d1 create mun-debate-central-db
+1. **Login to Cloudflare**:
+   ```bash
+   npx wrangler login
+   ```
 
-# Run migrations to set up schema and initial sources
-npx wrangler d1 execute mun-debate-central-db --file=migrations/0001_initial_schema.sql
-npx wrangler d1 execute mun-debate-central-db --file=migrations/0002_seed_sources.sql
-```
+2. **Create the D1 Database**:
+   ```bash
+   npx wrangler d1 create mun-debate-central-db
+   ```
+   Copy the `database_id` output and update it in `wrangler.toml`.
 
-Update your `wrangler.toml` with the generated `database_id`.
+3. **Apply Database Migrations**:
+   ```bash
+   npm run d1:migrate
+   ```
 
-### 2. Deploy Worker API
+4. **Deploy Frontend & Worker Together**:
+   ```bash
+   npm run deploy
+   ```
+   This builds the Vite frontend and deploys both the edge worker and the SPA static assets to Cloudflare in a single step!
 
-```bash
-npx wrangler deploy
-```
-
-### 3. Deploy Frontend on Cloudflare Pages
+### Alternative: Cloudflare Pages Deployment
 
 1. In the Cloudflare Dashboard, go to **Workers & Pages** → **Create application** → **Pages**.
 2. Connect your Git repository.
@@ -133,7 +156,7 @@ npx wrangler deploy
    - **Framework preset**: Vite
    - **Build command**: `npm run build`
    - **Build output directory**: `dist`
-   - **Environment Variable**: `VITE_API_URL` set to your Worker URL (or keep `/api` if using Cloudflare Pages Functions / route proxy).
+   - **Environment Variable**: `VITE_API_URL` set to your Worker URL (or keep `/api` if binding a worker).
 
 ---
 

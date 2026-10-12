@@ -2,12 +2,13 @@
 // Sidebar Component
 // ============================================================
 
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Bookmark, FileText, Globe, Settings,
-  ChevronLeft, ChevronRight, Trophy, Gavel, Clock, CheckSquare,
-  Database, GraduationCap, Radio,
+  ChevronLeft, ChevronRight, Trophy, Gavel, Clock,
+  Database, GraduationCap, Radio, X, LogOut,
 } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
 
 interface SidebarProps {
   collapsed: boolean;
@@ -36,6 +37,18 @@ const navItems = [
 
 export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: SidebarProps) {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { user, logout } = useAuth();
+
+  const handleLogout = () => {
+    onMobileClose();
+    logout();
+    navigate('/login');
+  };
+
+  const userInitials = user?.name
+    ? user.name.split(' ').map(w => w[0]).join('').toUpperCase().slice(0, 2)
+    : '??';
 
   return (
     <>
@@ -43,11 +56,26 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
         <div className="side-panel-overlay" onClick={onMobileClose} style={{ zIndex: 35 }} />
       )}
       <aside className={`sidebar ${collapsed ? 'collapsed' : ''} ${mobileOpen ? 'open' : ''}`}>
-        <div className="sidebar-logo" onClick={onToggle}>
-          <div className="sidebar-logo-icon">
-            <Radio size={18} />
+        <div className="sidebar-logo">
+          <div
+            style={{ display: 'flex', alignItems: 'center', gap: '10px', flex: 1, cursor: 'pointer' }}
+            onClick={() => { onMobileClose(); navigate('/'); }}
+          >
+            <div className="sidebar-logo-icon">
+              <Radio size={18} />
+            </div>
+            <span className="sidebar-logo-text">MUN & Debate</span>
           </div>
-          <span className="sidebar-logo-text">MUN & Debate Central</span>
+          {mobileOpen && (
+            <button
+              className="btn btn-ghost btn-icon"
+              onClick={onMobileClose}
+              style={{ width: '28px', height: '28px', minWidth: '28px', padding: 0 }}
+              aria-label="Close menu"
+            >
+              <X size={18} />
+            </button>
+          )}
         </div>
 
         <nav className="sidebar-nav">
@@ -62,7 +90,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
             const { to, icon: Icon, label } = item as { to: string; icon: typeof LayoutDashboard; label: string };
             const isActive = to === '/'
               ? location.pathname === '/'
-              : location.pathname + location.search === to || location.pathname.startsWith(to.split('?')[0]) && to !== '/';
+              : location.pathname + location.search === to || (location.pathname.startsWith(to.split('?')[0]) && to !== '/');
 
             return (
               <NavLink
@@ -78,14 +106,70 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
           })}
         </nav>
 
-        <div style={{ padding: '12px 8px', borderTop: '1px solid var(--color-border-primary)' }}>
+        {/* User Card & Controls at Bottom */}
+        <div style={{ padding: '8px', borderTop: '1px solid var(--color-border-primary)', display: 'flex', flexDirection: 'column', gap: '4px' }}>
+          {user && (
+            <div
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: collapsed ? 'center' : 'flex-start',
+                gap: '10px',
+                padding: collapsed ? '8px 0' : '8px 10px',
+                borderRadius: 'var(--radius-md)',
+                background: 'var(--color-bg-secondary)',
+                marginBottom: '4px',
+                overflow: 'hidden',
+              }}
+              title={`${user.name} (${user.email})`}
+            >
+              <div
+                style={{
+                  width: '30px',
+                  height: '30px',
+                  borderRadius: '50%',
+                  background: 'linear-gradient(135deg, var(--color-primary), #8b5cf6)',
+                  color: '#fff',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  fontWeight: 700,
+                  fontSize: '0.75rem',
+                  flexShrink: 0,
+                }}
+              >
+                {userInitials}
+              </div>
+              {!collapsed && (
+                <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+                  <div style={{ fontSize: '0.8rem', fontWeight: 600, color: 'var(--color-text-primary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {user.name}
+                  </div>
+                  <div style={{ fontSize: '0.7rem', color: 'var(--color-text-tertiary)', whiteSpace: 'nowrap', textOverflow: 'ellipsis', overflow: 'hidden' }}>
+                    {user.email}
+                  </div>
+                </div>
+              )}
+              {!collapsed && (
+                <button
+                  onClick={handleLogout}
+                  className="btn btn-ghost btn-icon"
+                  style={{ width: '26px', height: '26px', padding: 0, color: 'var(--color-text-tertiary)' }}
+                  title="Sign Out"
+                >
+                  <LogOut size={14} />
+                </button>
+              )}
+            </div>
+          )}
+
           <button
             className="nav-item"
             onClick={onToggle}
             style={{ width: '100%', border: 'none', background: 'none' }}
           >
             {collapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
-            <span className="sidebar-label">Collapse</span>
+            <span className="sidebar-label">{collapsed ? 'Expand' : 'Collapse'}</span>
           </button>
         </div>
       </aside>

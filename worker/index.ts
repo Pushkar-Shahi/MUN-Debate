@@ -5,6 +5,7 @@
 export interface Env {
   DB: D1Database;
   ENVIRONMENT: string;
+  ASSETS: Fetcher;
 }
 
 // UUID generation compatible with Workers runtime
@@ -902,7 +903,14 @@ export default {
       // Duplicate Reviews
       if (pathname === '/api/duplicate-reviews' && method === 'GET') return getDuplicateReviews(env.DB);
 
-      // Not found
+      // Non-API routes: serve static assets (SPA)
+      // Attempt to serve static file, fallback to index.html for SPA routing
+      if (env.ASSETS) {
+        const assetResponse = await env.ASSETS.fetch(request);
+        if (assetResponse.status !== 404) return assetResponse;
+        // SPA fallback — serve index.html for client-side routes
+        return env.ASSETS.fetch(new Request(new URL('/', request.url), request));
+      }
       return errorResponse('Not Found', 404);
     } catch (err) {
       console.error('API Error:', err);
