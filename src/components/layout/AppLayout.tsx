@@ -32,7 +32,7 @@ export function AppLayout() {
           onAddEvent={() => setAddModalOpen(true)}
         />
 
-        <main style={{ padding: '24px 28px', maxWidth: '1440px', margin: '0 auto' }}>
+        <main className="app-main-content">
           <Outlet context={{ openDetailModal: (id: string) => setSelectedEventId(id) }} />
         </main>
       </div>

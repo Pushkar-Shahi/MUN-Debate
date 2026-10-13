@@ -182,6 +182,30 @@ a:hover { color: var(--color-accent-hover); }
   margin-left: 68px;
 }
 
+/* Main content area — responsive padding */
+.app-main-content {
+  padding: 24px 28px;
+  max-width: 1440px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+@media (max-width: 1024px) {
+  .app-main-content {
+    padding: 20px 20px;
+  }
+}
+@media (max-width: 640px) {
+  .app-main-content {
+    padding: 16px 14px;
+  }
+}
+@media (max-width: 480px) {
+  .app-main-content {
+    padding: 14px 10px;
+  }
+}
+
 
 /* ============================
    TOP BAR
@@ -709,6 +733,9 @@ a:hover { color: var(--color-accent-hover); }
   color: var(--color-text-secondary);
   margin-bottom: 6px;
 }
+
+/* Universal .input class — used by EventDetailPage, EventFiltersBar, SavedEventsPage, etc. */
+.input,
 .form-input, .form-select, .form-textarea {
   width: 100%;
   padding: 9px 14px;
@@ -721,38 +748,26 @@ a:hover { color: var(--color-accent-hover); }
   outline: none;
   transition: border-color 0.2s, box-shadow 0.2s;
 }
+.input:focus,
 .form-input:focus, .form-select:focus, .form-textarea:focus {
   border-color: var(--color-accent-primary);
   box-shadow: 0 0 0 3px var(--color-accent-soft);
 }
-.form-textarea { min-height: 90px; resize: vertical; font-family: inherit; }
-.form-select { cursor: pointer; appearance: none; }
+.form-textarea,
+textarea.input { min-height: 90px; resize: vertical; font-family: inherit; }
+.form-select,
+select.input { cursor: pointer; appearance: none; }
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 .form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
 
-/* Styled select in settings (the "input" class used in SettingsPage) */
-select.input,
-.settings-select {
-  width: 100%;
-  padding: 9px 14px;
-  background: var(--color-bg-input);
-  border: 1px solid var(--color-border-primary);
-  border-radius: 8px;
-  color: var(--color-text-primary);
-  font-size: 0.875rem;
-  font-family: var(--font-sans);
-  outline: none;
-  cursor: pointer;
-  transition: border-color 0.2s, box-shadow 0.2s;
-}
-select.input:focus, .settings-select:focus {
-  border-color: var(--color-accent-primary);
-  box-shadow: 0 0 0 3px var(--color-accent-soft);
-}
-select.input option, .settings-select option {
+/* Option styling for selects */
+select.input option,
+.form-select option,
+.settings-select option {
   background: var(--color-bg-secondary);
   color: var(--color-text-primary);
 }
+
 
 
 /* ============================
@@ -1235,7 +1250,7 @@ select.input option, .settings-select option {
 
 
 /* ============================
-   RESPONSIVE — Tablet
+   RESPONSIVE — Tablet (≤1024px)
    ============================ */
 @media (max-width: 1024px) {
   .sidebar { transform: translateX(-100%); }
@@ -1267,21 +1282,28 @@ select.input option, .settings-select option {
   .login-form-panel {
     padding: 32px 28px;
   }
+
+  /* Data tables need horizontal scroll */
+  .data-table { min-width: 700px; }
 }
 
 /* ============================
-   RESPONSIVE — Mobile
+   RESPONSIVE — Mobile (≤640px)
    ============================ */
 @media (max-width: 640px) {
+  /* TopBar */
   .topbar {
     padding: 0 12px;
     gap: 8px;
+    height: 54px;
   }
   .topbar-add-label { display: none; }
   .topbar-add-btn { padding: 8px; }
 
+  /* Search */
   .search-bar {
-    max-width: 200px;
+    max-width: 180px;
+    flex: 1 1 auto;
   }
   .search-bar input {
     font-size: 0.8rem;
@@ -1292,19 +1314,34 @@ select.input option, .settings-select option {
     font-size: 0.75rem;
   }
 
+  /* Summary stat cards */
   .summary-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
-  .filter-bar { gap: 6px; }
-  .tabs { overflow-x: auto; }
 
+  /* Filter bar */
+  .filter-bar { gap: 6px; }
+  .filter-chip { font-size: 0.75rem; padding: 4px 10px; }
+
+  /* Tabs */
+  .tabs { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+
+  /* Dropdowns go full-width on mobile */
   .topbar-notifications-dropdown {
-    width: calc(100vw - 24px);
-    right: -50px;
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 60px !important;
+    width: auto !important;
+    max-height: 70vh;
   }
   .topbar-user-dropdown {
-    width: calc(100vw - 24px);
-    right: -10px;
+    position: fixed !important;
+    left: 12px !important;
+    right: 12px !important;
+    top: 60px !important;
+    width: auto !important;
   }
 
+  /* Calendar */
   .calendar-day {
     min-height: 60px;
     padding: 4px;
@@ -1316,6 +1353,24 @@ select.input option, .settings-select option {
   .calendar-event-dot {
     font-size: 0.55rem;
   }
+
+  /* Modal */
+  .modal-content {
+    width: 96%;
+    max-height: 90vh;
+    padding: 20px;
+    border-radius: 14px;
+  }
+
+  /* Page titles */
+  .page-title { font-size: 1.25rem; }
+
+  /* Cards need tighter padding */
+  .card { padding: 16px; }
+
+  /* Event cards */
+  .event-card-meta { font-size: 0.75rem; gap: 6px 12px; }
+  .event-card-title { font-size: 0.92rem; }
 
   /* Login responsive — small */
   .login-page {
@@ -1341,8 +1396,16 @@ select.input option, .settings-select option {
   .login-form-title {
     font-size: 1.2rem;
   }
+
+  /* Buttons need larger touch targets on mobile */
+  .btn { min-height: 36px; }
+  .btn-sm { min-height: 32px; }
+  .btn-icon { min-width: 36px; min-height: 36px; }
 }
 
+/* ============================
+   RESPONSIVE — Small Phone (≤480px)
+   ============================ */
 @media (max-width: 480px) {
   .login-logo span {
     font-size: 1.1rem !important;
@@ -1353,4 +1416,89 @@ select.input option, .settings-select option {
   .topbar-user-chevron {
     display: none;
   }
+
+  /* Even tighter card padding */
+  .card { padding: 14px; border-radius: 10px; }
+
+  /* Stack filter bar exports buttons */
+  .filter-bar-container .topbar-actions {
+    flex-wrap: wrap;
+  }
+
+  /* Summary cards single column on very small screens */
+  .summary-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
+  .summary-card .summary-count { font-size: 1.4rem; }
+
+  /* Sidebar user card */
+  .sidebar-logo { padding: 0 12px; }
+
+  /* Badge sizing */
+  .badge { font-size: 0.68rem; padding: 2px 8px; }
+
+  /* Countdown text */
+  .countdown { font-size: 0.7rem !important; }
 }
+
+/* ============================
+   RESPONSIVE — Extra Small (≤360px)
+   ============================ */
+@media (max-width: 360px) {
+  .search-bar {
+    max-width: 140px;
+  }
+  .search-bar input {
+    height: 32px;
+    font-size: 0.75rem;
+  }
+  .topbar {
+    padding: 0 8px;
+    gap: 6px;
+  }
+
+  /* Summary single column */
+  .summary-grid { grid-template-columns: 1fr; }
+}
+
+/* ============================
+   TOUCH & HOVER OPTIMIZATION
+   ============================ */
+@media (hover: none) {
+  /* Remove hover effects on touch-only devices to prevent sticky hover states */
+  .card-clickable:hover {
+    border-color: var(--color-border-primary);
+    box-shadow: none;
+  }
+  .nav-item:hover {
+    background: transparent;
+    color: var(--color-text-secondary);
+  }
+  .nav-item.active:hover {
+    background: var(--color-accent-soft);
+    color: var(--color-text-accent);
+  }
+}
+
+/* Ensure tap targets are large enough for touch */
+@media (pointer: coarse) {
+  .nav-item { padding: 12px; min-height: 44px; }
+  .filter-chip { min-height: 36px; padding: 6px 14px; }
+  .btn { min-height: 40px; }
+  .btn-sm { min-height: 36px; }
+  .btn-icon { min-width: 40px; min-height: 40px; }
+  .topbar-menu-item { padding: 12px 14px; min-height: 44px; }
+  .tab { padding: 12px 18px; min-height: 44px; }
+}
+
+/* ============================
+   SAFE AREA (NOTCHED DEVICES)
+   ============================ */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .sidebar {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .topbar {
+    padding-left: max(12px, env(safe-area-inset-left));
+    padding-right: max(12px, env(safe-area-inset-right));
+  }
+}
+

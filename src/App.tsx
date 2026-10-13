@@ -3,7 +3,7 @@
 // ============================================================
 
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import { ThemeProvider } from './context/ThemeContext';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { AppLayout } from './components/layout/AppLayout';
@@ -18,6 +18,7 @@ import { ApplicationsPage } from './pages/ApplicationsPage';
 import { CompletedPage } from './pages/CompletedPage';
 import { SourcesPage } from './pages/SourcesPage';
 import { SettingsPage } from './pages/SettingsPage';
+import { useEffect, useRef } from 'react';
 
 // Configure QueryClient
 const queryClient = new QueryClient({
@@ -55,12 +56,31 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
   return <>{children}</>;
 }
 
+// Clear react-query cache when user logs out so stale data isn't shown
+function AuthCacheClearer() {
+  const { isAuthenticated, user } = useAuth();
+  const qc = useQueryClient();
+  const prevUserId = useRef<string | null>(null);
+
+  useEffect(() => {
+    const currentId = user?.id ?? null;
+    // If user changed (including from a user to null = logout, or from one user to another)
+    if (prevUserId.current !== null && prevUserId.current !== currentId) {
+      qc.clear(); // clear all cached queries so new user gets fresh data
+    }
+    prevUserId.current = currentId;
+  }, [user?.id, qc]);
+
+  return null;
+}
+
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <AuthProvider>
           <BrowserRouter>
+            <AuthCacheClearer />
             <Routes>
               {/* Public Route */}
               <Route path="/login" element={<LoginPage />} />

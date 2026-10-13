@@ -145,7 +145,7 @@ export function SettingsPage() {
             Select your preferred display theme. Easily switch any time using the header toggle.
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '14px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '14px' }}>
             <div
               className="card card-clickable"
               onClick={() => {
@@ -223,7 +223,7 @@ export function SettingsPage() {
             Set maximum delegation fee thresholds and minimum deadline warnings
           </p>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '20px' }}>
             <div>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 600, marginBottom: '6px' }}>
                 Max Delegate Fee: ₹{formData.max_fee}

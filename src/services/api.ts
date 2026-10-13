@@ -11,18 +11,31 @@ import {
   INITIAL_EVENTS, INITIAL_SOURCES, INITIAL_SAVED_EVENTS,
   INITIAL_NOTIFICATIONS, INITIAL_PREFERENCES,
 } from './mockData';
+import { CURRENT_USER_ID_KEY } from '../context/AuthContext';
 
 const API_BASE = import.meta.env.VITE_API_URL || '/api';
 
-// --- Local Storage Storage Cache for Seamless Offline / Standalone Use ---
-const STORAGE_KEYS = {
-  EVENTS: 'mun_debate_events_v1',
-  SOURCES: 'mun_debate_sources_v1',
-  SAVED: 'mun_debate_saved_v1',
-  NOTIFICATIONS: 'mun_debate_notifications_v1',
-  PREFS: 'mun_debate_prefs_v1',
-  SYNC_RUNS: 'mun_debate_sync_runs_v1',
-};
+// --- User-Namespaced Local Storage Keys ---
+// Events and Sources are global (shared), but Saved, Notifications, Prefs are per-user
+function getUserId(): string {
+  try {
+    return localStorage.getItem(CURRENT_USER_ID_KEY) || '_anonymous_';
+  } catch {
+    return '_anonymous_';
+  }
+}
+
+function getStorageKeys() {
+  const uid = getUserId();
+  return {
+    EVENTS: 'mun_debate_events_v1', // global — shared across users
+    SOURCES: 'mun_debate_sources_v1', // global
+    SYNC_RUNS: 'mun_debate_sync_runs_v1', // global
+    SAVED: `mun_debate_saved_v1_${uid}`, // per-user
+    NOTIFICATIONS: `mun_debate_notifications_v1_${uid}`, // per-user
+    PREFS: `mun_debate_prefs_v1_${uid}`, // per-user
+  };
+}
 
 function getStorage<T>(key: string, defaultVal: T): T {
   try {
@@ -50,12 +63,13 @@ function initStore(): {
   prefs: UserPreferences;
   syncRuns: SyncRun[];
 } {
-  const events = getStorage<EventRecord[]>(STORAGE_KEYS.EVENTS, INITIAL_EVENTS);
-  const sources = getStorage<Source[]>(STORAGE_KEYS.SOURCES, INITIAL_SOURCES);
-  const saved = getStorage<SavedEvent[]>(STORAGE_KEYS.SAVED, INITIAL_SAVED_EVENTS);
-  const notifications = getStorage<Notification[]>(STORAGE_KEYS.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
-  const prefs = getStorage<UserPreferences>(STORAGE_KEYS.PREFS, INITIAL_PREFERENCES);
-  const syncRuns = getStorage<SyncRun[]>(STORAGE_KEYS.SYNC_RUNS, [
+  const keys = getStorageKeys();
+  const events = getStorage<EventRecord[]>(keys.EVENTS, INITIAL_EVENTS);
+  const sources = getStorage<Source[]>(keys.SOURCES, INITIAL_SOURCES);
+  const saved = getStorage<SavedEvent[]>(keys.SAVED, INITIAL_SAVED_EVENTS);
+  const notifications = getStorage<Notification[]>(keys.NOTIFICATIONS, INITIAL_NOTIFICATIONS);
+  const prefs = getStorage<UserPreferences>(keys.PREFS, INITIAL_PREFERENCES);
+  const syncRuns = getStorage<SyncRun[]>(keys.SYNC_RUNS, [
     {
       id: 'sync_1',
       source_id: 'src_mymun',
@@ -333,7 +347,7 @@ export async function createEvent(event: Partial<EventRecord>): Promise<{ succes
       updated_at: new Date().toISOString(),
     };
     store.events.unshift(newRecord);
-    setStorage(STORAGE_KEYS.EVENTS, store.events);
+    setStorage(getStorageKeys().EVENTS, store.events);
     return { success: true, data: { id, slug } };
   }
 }
@@ -346,7 +360,7 @@ export async function updateEvent(id: string, data: Partial<EventRecord>): Promi
     const idx = store.events.findIndex(e => e.id === id);
     if (idx !== -1) {
       store.events[idx] = { ...store.events[idx], ...data, updated_at: new Date().toISOString() };
-      setStorage(STORAGE_KEYS.EVENTS, store.events);
+      setStorage(getStorageKeys().EVENTS, store.events);
     }
     return { success: true };
   }
@@ -428,7 +442,7 @@ export async function saveEvent(eventId: string, status = 'interested', notes?: 
       existing.status = status as SavedEvent['status'];
       if (notes) existing.personal_notes = notes;
       existing.updated_at = new Date().toISOString();
-      setStorage(STORAGE_KEYS.SAVED, store.saved);
+      setStorage(getStorageKeys().SAVED, store.saved);
       return { success: true, data: { id: existing.id } };
     }
 
@@ -454,7 +468,7 @@ export async function saveEvent(eventId: string, status = 'interested', notes?: 
       updated_at: new Date().toISOString(),
     };
     store.saved.unshift(newSaved);
-    setStorage(STORAGE_KEYS.SAVED, store.saved);
+    setStorage(getStorageKeys().SAVED, store.saved);
     return { success: true, data: { id: newId } };
   }
 }
@@ -467,7 +481,7 @@ export async function updateSavedEvent(id: string, data: Partial<SavedEvent>): P
     const idx = store.saved.findIndex(s => s.id === id);
     if (idx !== -1) {
       store.saved[idx] = { ...store.saved[idx], ...data, updated_at: new Date().toISOString() };
-      setStorage(STORAGE_KEYS.SAVED, store.saved);
+      setStorage(getStorageKeys().SAVED, store.saved);
     }
     return { success: true };
   }
@@ -479,7 +493,7 @@ export async function deleteSavedEvent(id: string): Promise<{ success: boolean }
   } catch {
     const store = initStore();
     store.saved = store.saved.filter(s => s.id !== id && s.event_id !== id);
-    setStorage(STORAGE_KEYS.SAVED, store.saved);
+    setStorage(getStorageKeys().SAVED, store.saved);
     return { success: true };
   }
 }
@@ -531,7 +545,7 @@ export async function createSource(source: Partial<Source>): Promise<{ success: 
       updated_at: new Date().toISOString(),
     };
     store.sources.push(newSource);
-    setStorage(STORAGE_KEYS.SOURCES, store.sources);
+    setStorage(getStorageKeys().SOURCES, store.sources);
     return { success: true, data: { id } };
   }
 }
@@ -544,7 +558,7 @@ export async function updateSource(id: string, data: Partial<Source>): Promise<{
     const idx = store.sources.findIndex(s => s.id === id);
     if (idx !== -1) {
       store.sources[idx] = { ...store.sources[idx], ...data, updated_at: new Date().toISOString() };
-      setStorage(STORAGE_KEYS.SOURCES, store.sources);
+      setStorage(getStorageKeys().SOURCES, store.sources);
     }
     return { success: true };
   }
@@ -558,7 +572,7 @@ export async function triggerSourceSync(id: string): Promise<{ success: boolean;
     source.last_attempted_check = new Date().toISOString();
     source.health = 'healthy';
     source.events_updated += 2;
-    setStorage(STORAGE_KEYS.SOURCES, store.sources);
+    setStorage(getStorageKeys().SOURCES, store.sources);
 
     const run: SyncRun = {
       id: `run_${Date.now()}`,
@@ -575,7 +589,7 @@ export async function triggerSourceSync(id: string): Promise<{ success: boolean;
       retry_info: null,
     };
     store.syncRuns.unshift(run);
-    setStorage(STORAGE_KEYS.SYNC_RUNS, store.syncRuns);
+    setStorage(getStorageKeys().SYNC_RUNS, store.syncRuns);
   }
   return { success: true, message: `Synced ${source?.name || 'source'} successfully.` };
 }
@@ -608,7 +622,7 @@ export async function updatePreferences(prefs: Partial<UserPreferences>): Promis
   } catch {
     const store = initStore();
     store.prefs = { ...store.prefs, ...prefs, updated_at: new Date().toISOString() };
-    setStorage(STORAGE_KEYS.PREFS, store.prefs);
+    setStorage(getStorageKeys().PREFS, store.prefs);
     return { success: true };
   }
 }
@@ -643,7 +657,7 @@ export async function markNotificationRead(id: string): Promise<{ success: boole
       const n = store.notifications.find(item => item.id === id);
       if (n) n.is_read = true;
     }
-    setStorage(STORAGE_KEYS.NOTIFICATIONS, store.notifications);
+    setStorage(getStorageKeys().NOTIFICATIONS, store.notifications);
     return { success: true };
   }
 }
