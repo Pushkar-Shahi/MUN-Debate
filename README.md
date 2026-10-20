@@ -1,6 +1,6 @@
 # MUN & Debate Central
 
-A personal centralized discovery, tracking, and management platform for Model United Nations (MUN) conferences, parliamentary debating tournaments, Youth Parliament sessions, and national student orator competitions.
+A personal centralized discovery, tracking, and management platform for Model United Nations (MUN) conferences, parliamentary debating tournaments, hands-on training workshops, masterclasses, moot court competitions, case challenges, and student orator championships.
 
 ---
 
@@ -9,9 +9,9 @@ A personal centralized discovery, tracking, and management platform for Model Un
 MUN & Debate Central eliminates the friction of manually visiting dozens of circuit websites, college portals, and social media flyers to discover upcoming opportunities, check eligibility, track registration deadlines, and register teams.
 
 ### 1. **Discovery & Exploration Engine**
-- **Unified Directory**: Aggregates Model UN, British Parliamentary (BP), Asian Parliamentary (AP), World Schools (WSDC), Youth Parliament, and Public Speaking competitions.
+- **Unified Directory**: Aggregates Model UN, British Parliamentary (BP), Asian Parliamentary (AP), World Schools (WSDC), Workshops & Masterclasses, Moot Courts, Case Competitions, Youth Parliament, and Public Speaking championships.
 - **Deep Multi-Axis Filtering**:
-  - **Category**: MUN, Parliamentary Debate, BP, AP, Youth Parliament, Legal Debate, Public Speaking, Extempore, etc.
+  - **Category**: MUN, Parliamentary Debate, BP, AP, Workshops & Masterclasses, Bootcamps, Case Competitions, Moot Courts, Quizzes, Policy Hackathons, Youth Parliament, Legal Debate, Public Speaking, Extempore, etc.
   - **Participation Mode**: In-Person (Offline), Virtual (Online), or Hybrid.
   - **Geographic Circuits**: Delhi NCR, Mumbai, Bangalore, Jaipur, International, or Online.
   - **Registration Status & Fee**: Free / Paid / Scholarship available, Open, Closing Soon.
@@ -160,6 +160,30 @@ The project supports both **Cloudflare Workers + Static Assets** (unified single
 
 ---
 
+## 🤖 Automated Discovery & Crawler Pipeline
+
+MUN & Debate Central features a multi-tiered ingestion engine to discover competitions, conferences, moot courts, and workshops automatically:
+
+1. **Standalone CLI Crawler**:
+   ```bash
+   # Run discovery preview (dry-run)
+   npm run crawl:dry
+
+   # Run live ingestion
+   npm run crawl
+   ```
+   Scans RSS opportunity streams, legal journals, and circuit intelligence queries across Indian and international circuits, extracting title, category, format, registration links, and deadlines.
+
+2. **Automated Scheduled Ingestion (GitHub Actions & Cloudflare Cron)**:
+   - **GitHub Actions Workflow** ([.github/workflows/scheduled-crawler.yml](file:///.github/workflows/scheduled-crawler.yml)): Runs daily at `06:00 UTC` to scan circuit feeds and ingest newly announced opportunities.
+   - **Cloudflare Worker Cron Trigger** ([worker/index.ts](file:///worker/index.ts)): Configured in `wrangler.toml` (`0 */6 * * *`) to automatically query active sources and generate approaching deadline notifications every 6 hours.
+
+3. **On-Demand Source Sync in UI**:
+   - Go to **Sources** (`/sources`) in the web interface and click **"Sync"** on any source adapter to trigger immediate live scraping and ingestion with animated progress feedback.
+
+---
+
 ## 📄 License
 
 MIT License. Designed for student delegates, parliamentary debaters, and circuit organizers.
+

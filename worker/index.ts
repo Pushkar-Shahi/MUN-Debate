@@ -2,6 +2,8 @@
 // MUN & Debate Central — Cloudflare Worker API
 // ============================================================
 
+import { executeSourceCrawl } from './crawler';
+
 export interface Env {
   DB: D1Database;
   ENVIRONMENT: string;
@@ -529,6 +531,76 @@ async function updateSource(db: D1Database, id: string, body: Record<string, unk
   return jsonResponse({ success: true });
 }
 
+// --- Source Sync & Crawler Handler ---
+async function handleTriggerSync(db: D1Database, sourceId: string): Promise<Response> {
+  const source = await db.prepare('SELECT * FROM sources WHERE id = ?').bind(sourceId).first<Record<string, unknown>>();
+  if (!source) return errorResponse('Source not found', 404);
+
+  const crawlResult = await executeSourceCrawl(sourceId, source.url as string);
+  const now = new Date().toISOString();
+
+  let createdCount = 0;
+  for (const e of crawlResult.events) {
+    const existing = await db.prepare('SELECT id FROM events WHERE slug = ? OR (official_event_url IS NOT NULL AND official_event_url = ?)').bind(e.slug, e.official_event_url).first<{id: string}>();
+    if (!existing) {
+      await db.prepare(`
+        INSERT INTO events (
+          id, title, slug, organizer, primary_category, competition_format, description,
+          registration_open_at, registration_deadline, event_start_at, event_end_at, event_timezone,
+          location_name, city, region, country, mode, eligibility_text, fee_amount, fee_currency,
+          fee_status, registration_status, registration_url, official_event_url, committees, topics,
+          awards, certificates, beginner_friendly, participation_type, is_manually_added, data_confidence,
+          first_discovered_at, last_seen_at
+        ) VALUES (
+          ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, ?, ?,
+          ?, ?, ?, ?, 0, ?,
+          ?, ?
+        )
+      `).bind(
+        e.id, e.title, e.slug, e.organizer, e.primary_category, e.competition_format, e.description,
+        e.registration_open_at, e.registration_deadline, e.event_start_at, e.event_end_at, e.event_timezone,
+        e.location_name, e.city, e.region, e.country, e.mode, e.eligibility_text, e.fee_amount, e.fee_currency,
+        e.fee_status, e.registration_status, e.registration_url, e.official_event_url, JSON.stringify(e.committees), JSON.stringify(e.topics),
+        e.awards, e.certificates ? 1 : 0, e.beginner_friendly ? 1 : 0, e.participation_type, e.data_confidence,
+        e.first_discovered_at, e.last_seen_at
+      ).run();
+      createdCount++;
+    } else {
+      await db.prepare('UPDATE events SET last_seen_at = ? WHERE id = ?').bind(now, existing.id).run();
+    }
+  }
+
+  // Update source statistics
+  await db.prepare(`
+    UPDATE sources
+    SET last_successful_check = ?, last_attempted_check = ?, health = 'healthy',
+        events_discovered = events_discovered + ?, events_updated = events_updated + ?
+    WHERE id = ?
+  `).bind(now, now, createdCount, crawlResult.events.length - createdCount, sourceId).run();
+
+  // Record sync run log
+  await db.prepare(`
+    INSERT INTO sync_runs (id, source_id, started_at, ended_at, status, events_discovered, events_created, events_updated, events_skipped)
+    VALUES (?, ?, ?, ?, 'success', ?, ?, ?, ?)
+  `).bind(
+    crypto.randomUUID(), sourceId, now, new Date().toISOString(),
+    crawlResult.events.length, createdCount, crawlResult.events.length - createdCount, 0
+  ).run();
+
+  return jsonResponse({
+    success: true,
+    message: `Sync completed for ${source.name}. Discovered ${crawlResult.events.length} opportunities, added ${createdCount} new events.`,
+    data: {
+      discovered: crawlResult.events.length,
+      created: createdCount,
+      updated: crawlResult.events.length - createdCount,
+    }
+  });
+}
+
 // --- Sync Runs ---
 async function getSyncRuns(db: D1Database, url: URL): Promise<Response> {
   const sourceId = url.searchParams.get('source_id');
@@ -878,6 +950,10 @@ export default {
         const body = await request.json() as Record<string, unknown>;
         return updateSource(env.DB, id, body);
       }
+      if (pathname.match(/^\/api\/sources\/([^/]+)\/sync$/) && method === 'POST') {
+        const id = pathname.split('/')[3];
+        return handleTriggerSync(env.DB, id);
+      }
 
       // Sync Runs
       if (pathname === '/api/sync-runs' && method === 'GET') return getSyncRuns(env.DB, url);
@@ -921,10 +997,19 @@ export default {
   // Cron Triggers for scheduled ingestion
   async scheduled(event: ScheduledEvent, env: Env, ctx: ExecutionContext): Promise<void> {
     console.log('Cron trigger fired:', event.cron);
-    // Future: implement source-specific ingestion runs
-    // For now, update notification generation for approaching deadlines
     try {
+      // 1. Generate deadline notifications for user trackers
       await generateDeadlineNotifications(env.DB);
+
+      // 2. Automated background crawler across active sources
+      const sources = await env.DB.prepare('SELECT id FROM sources WHERE is_active = 1 LIMIT 5').all<{ id: string }>();
+      for (const s of (sources.results ?? [])) {
+        try {
+          await handleTriggerSync(env.DB, s.id);
+        } catch (sourceErr) {
+          console.error(`Automated crawler error for source ${s.id}:`, sourceErr);
+        }
+      }
     } catch (err) {
       console.error('Cron error:', err);
     }

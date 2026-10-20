@@ -19,6 +19,12 @@ export type EventCategory =
   | 'legal_debate'
   | 'policy_diplomacy'
   | 'online_debate_tournament'
+  | 'workshop'
+  | 'bootcamp'
+  | 'case_competition'
+  | 'moot_court'
+  | 'quiz_competition'
+  | 'hackathon_policy'
   | 'other';
 
 export type EventMode = 'online' | 'offline' | 'hybrid' | 'unknown';
@@ -48,7 +54,7 @@ export type ParticipationType = 'individual' | 'team' | 'both' | 'unknown';
 
 // --- Source Types ---
 
-export type SourceCategory = 'mun' | 'debate' | 'student_competition' | 'mixed';
+export type SourceCategory = 'mun' | 'debate' | 'student_competition' | 'workshop' | 'mixed';
 
 export type IntegrationMode =
   | 'api'
@@ -325,6 +331,12 @@ export const CATEGORY_LABELS: Record<EventCategory, string> = {
   legal_debate: 'Legal Debate',
   policy_diplomacy: 'Policy & Diplomacy',
   online_debate_tournament: 'Online Debate Tournament',
+  workshop: 'Workshop & Masterclass',
+  bootcamp: 'Bootcamp & Training',
+  case_competition: 'Case Competition',
+  moot_court: 'Moot Court & Mock Trial',
+  quiz_competition: 'Quiz Competition',
+  hackathon_policy: 'Policy Hackathon',
   other: 'Other Competition',
 };
 
@@ -343,6 +355,12 @@ export const CATEGORY_COLORS: Record<EventCategory, string> = {
   legal_debate: '#ec4899',
   policy_diplomacy: '#3b82f6',
   online_debate_tournament: '#10b981',
+  workshop: '#06b6d4',
+  bootcamp: '#0284c7',
+  case_competition: '#e11d48',
+  moot_court: '#d97706',
+  quiz_competition: '#84cc16',
+  hackathon_policy: '#10b981',
   other: '#6b7280',
 };
 

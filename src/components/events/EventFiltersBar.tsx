@@ -2,10 +2,11 @@
 // Event Filters Bar Component
 // ============================================================
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import {
   Search, SlidersHorizontal, X, ArrowUpDown, LayoutGrid, List,
   Calendar, MapPin, Tag, Download, FileSpreadsheet, Check,
+  ChevronLeft, ChevronRight, Layers,
 } from 'lucide-react';
 import type { EventCategory, EventFilters, EventMode, RegistrationStatus, FeeStatus } from '../../types';
 import { CATEGORY_LABELS, LOCATION_PRESETS } from '../../types';
@@ -22,8 +23,14 @@ interface EventFiltersBarProps {
 const POPULAR_CATEGORIES: { id: EventCategory; label: string }[] = [
   { id: 'mun', label: 'MUN' },
   { id: 'parliamentary_debate', label: 'Parliamentary Debate' },
+  { id: 'workshop', label: 'Workshops & Training' },
+  { id: 'case_competition', label: 'Case Competitions' },
+  { id: 'moot_court', label: 'Moot Courts' },
   { id: 'bp_debate', label: 'BP Debate' },
   { id: 'ap_debate', label: 'AP Debate' },
+  { id: 'bootcamp', label: 'Bootcamps' },
+  { id: 'quiz_competition', label: 'Quizzes' },
+  { id: 'hackathon_policy', label: 'Policy Hackathons' },
   { id: 'youth_parliament', label: 'Youth Parliament' },
   { id: 'public_speaking', label: 'Public Speaking' },
   { id: 'legal_debate', label: 'Legal Debate' },
@@ -37,6 +44,41 @@ export function EventFiltersBar({
   totalCount,
 }: EventFiltersBarProps) {
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [isWrapped, setIsWrapped] = useState(false);
+  const [canScrollLeft, setCanScrollLeft] = useState(false);
+  const [canScrollRight, setCanScrollRight] = useState(true);
+  const chipsRef = useRef<HTMLDivElement>(null);
+
+  const checkScroll = () => {
+    if (!chipsRef.current || isWrapped) return;
+    const { scrollLeft, scrollWidth, clientWidth } = chipsRef.current;
+    setCanScrollLeft(scrollLeft > 6);
+    setCanScrollRight(scrollLeft + clientWidth < scrollWidth - 6);
+  };
+
+  useEffect(() => {
+    checkScroll();
+    const t1 = setTimeout(checkScroll, 80);
+    const t2 = setTimeout(checkScroll, 300);
+    const el = chipsRef.current;
+    if (el) {
+      el.addEventListener('scroll', checkScroll, { passive: true });
+      window.addEventListener('resize', checkScroll);
+    }
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      if (el) el.removeEventListener('scroll', checkScroll);
+      window.removeEventListener('resize', checkScroll);
+    };
+  }, [isWrapped]);
+
+  const scrollChips = (direction: 'left' | 'right') => {
+    if (!chipsRef.current) return;
+    const offset = direction === 'left' ? -280 : 280;
+    chipsRef.current.scrollBy({ left: offset, behavior: 'smooth' });
+    setTimeout(checkScroll, 320);
+  };
 
   const activeCategory = filters.categories?.[0];
   const activeMode = filters.mode?.[0];
@@ -169,6 +211,19 @@ export function EventFiltersBar({
           )}
         </button>
 
+        {/* Multi-line Wrap Toggle */}
+        <button
+          type="button"
+          className={`btn btn-sm ${isWrapped ? 'btn-primary' : 'btn-secondary'}`}
+          onClick={() => {
+            setIsWrapped(!isWrapped);
+            setTimeout(checkScroll, 120);
+          }}
+          title={isWrapped ? 'Switch back to single scrolling row' : 'Wrap all categories onto multiple lines'}
+        >
+          <Layers size={14} /> {isWrapped ? 'Row View' : 'All Categories'}
+        </button>
+
         {/* Export Dropdown */}
         <div style={{ display: 'flex', gap: '6px', marginLeft: 'auto' }}>
           <button
@@ -188,23 +243,58 @@ export function EventFiltersBar({
         </div>
       </div>
 
-      {/* Category Filter Chips */}
-      <div style={{ display: 'flex', gap: '8px', overflowX: 'auto', paddingBottom: '8px', scrollbarWidth: 'none' }}>
-        <button
-          className={`filter-chip ${!activeCategory ? 'active' : ''}`}
-          onClick={() => handleCategoryClick(undefined)}
+      {/* Category Filter Chips Carousel */}
+      <div className="filter-chips-carousel">
+        {!isWrapped && canScrollLeft && (
+          <div className="chip-nav-overlay left">
+            <button
+              type="button"
+              className="chip-nav-btn"
+              onClick={() => scrollChips('left')}
+              title="Scroll categories left"
+              aria-label="Scroll left"
+            >
+              <ChevronLeft size={16} />
+            </button>
+          </div>
+        )}
+
+        <div
+          ref={chipsRef}
+          className={`filter-chips-track ${isWrapped ? 'is-wrapped' : ''}`}
         >
-          All Categories
-        </button>
-        {POPULAR_CATEGORIES.map((cat) => (
           <button
-            key={cat.id}
-            className={`filter-chip ${activeCategory === cat.id ? 'active' : ''}`}
-            onClick={() => handleCategoryClick(cat.id)}
+            type="button"
+            className={`filter-chip ${!activeCategory ? 'active' : ''}`}
+            onClick={() => handleCategoryClick(undefined)}
           >
-            {cat.label}
+            All Categories
           </button>
-        ))}
+          {POPULAR_CATEGORIES.map((cat) => (
+            <button
+              type="button"
+              key={cat.id}
+              className={`filter-chip ${activeCategory === cat.id ? 'active' : ''}`}
+              onClick={() => handleCategoryClick(cat.id)}
+            >
+              {cat.label}
+            </button>
+          ))}
+        </div>
+
+        {!isWrapped && canScrollRight && (
+          <div className="chip-nav-overlay right">
+            <button
+              type="button"
+              className="chip-nav-btn"
+              onClick={() => scrollChips('right')}
+              title="Scroll categories right"
+              aria-label="Scroll right"
+            >
+              <ChevronRight size={16} />
+            </button>
+          </div>
+        )}
       </div>
 
       {/* Advanced Filter Drawdown */}
@@ -220,6 +310,26 @@ export function EventFiltersBar({
           }}
         >
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '16px' }}>
+            {/* Category Filter */}
+            <div>
+              <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>
+                All Categories & Formats
+              </label>
+              <select
+                className="input"
+                style={{ fontSize: '0.8rem', padding: '6px 10px' }}
+                value={activeCategory || ''}
+                onChange={(e) => handleCategoryClick((e.target.value as EventCategory) || undefined)}
+              >
+                <option value="">All Categories & Formats</option>
+                {Object.entries(CATEGORY_LABELS).map(([cat, label]) => (
+                  <option key={cat} value={cat}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
             {/* Mode Filter */}
             <div>
               <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-secondary)', marginBottom: '8px' }}>

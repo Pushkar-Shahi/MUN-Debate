@@ -1,0 +1,71 @@
+{
+  "name": "MUN & Debate Central — Opportunity Discovery Platform",
+  "short_name": "MUN Central",
+  "description": "Centralized discovery, tracking, and management platform for Model United Nations, parliamentary debating tournaments, workshops, moot courts, and case competitions.",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "background_color": "#0f0f12",
+  "theme_color": "#0f0f12",
+  "orientation": "any",
+  "scope": "/",
+  "lang": "en",
+  "dir": "ltr",
+  "categories": ["education", "news", "productivity"],
+  "icons": [
+    {
+      "src": "/pwa-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "/pwa-maskable-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "All Opportunities",
+      "short_name": "Explore",
+      "url": "/events",
+      "description": "Discover upcoming MUNs, debates, workshops and moot courts",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Closing Soon Radar",
+      "short_name": "Deadlines",
+      "url": "/closing-soon",
+      "description": "High-urgency deadlines expiring soon",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Tournament Calendar",
+      "short_name": "Calendar",
+      "url": "/calendar",
+      "description": "Interactive calendar agenda and schedule",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Saved Applications",
+      "short_name": "Tracker",
+      "url": "/saved",
+      "description": "Track pipeline and preparation checklists",
+      "icons": [{ "src": "/pwa-192x192.png", "sizes": "192x192" }]
+    }
+  ]
+}

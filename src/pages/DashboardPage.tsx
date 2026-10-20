@@ -241,7 +241,7 @@ export function DashboardPage() {
               Discover Opportunities
             </h2>
             <p style={{ fontSize: '0.8rem', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-              Handpicked and verified conferences, tournaments, and competitions
+              Handpicked and verified conferences, tournaments, workshops, and student competitions
             </p>
           </div>
 
@@ -269,18 +269,39 @@ export function DashboardPage() {
               Parliamentary Debate
             </button>
             <button
+              className={`filter-chip btn-sm ${selectedCategory === 'workshop' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('workshop')}
+              style={{ fontSize: '0.76rem', padding: '4px 10px', borderColor: 'var(--color-accent-primary)' }}
+            >
+              🛠️ Workshops & Masterclasses
+            </button>
+            <button
+              className={`filter-chip btn-sm ${selectedCategory === 'case_competition' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('case_competition')}
+              style={{ fontSize: '0.76rem', padding: '4px 10px' }}
+            >
+              💼 Case Competitions
+            </button>
+            <button
+              className={`filter-chip btn-sm ${selectedCategory === 'moot_court' ? 'active' : ''}`}
+              onClick={() => setSelectedCategory('moot_court')}
+              style={{ fontSize: '0.76rem', padding: '4px 10px' }}
+            >
+              ⚖️ Moot Courts
+            </button>
+            <button
               className={`filter-chip btn-sm ${selectedCategory === 'youth_parliament' ? 'active' : ''}`}
               onClick={() => setSelectedCategory('youth_parliament')}
               style={{ fontSize: '0.76rem', padding: '4px 10px' }}
             >
-              Youth Parliament
+              🏛️ Youth Parliament
             </button>
             <button
               className={`filter-chip btn-sm ${selectedCategory === 'public_speaking' ? 'active' : ''}`}
               onClick={() => setSelectedCategory('public_speaking')}
               style={{ fontSize: '0.76rem', padding: '4px 10px' }}
             >
-              Public Speaking
+              🎙️ Public Speaking
             </button>
           </div>
         </div>

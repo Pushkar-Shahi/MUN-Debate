@@ -2,11 +2,11 @@
 // Sidebar Component
 // ============================================================
 
-import { NavLink, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard, Calendar, Bookmark, FileText, Globe, Settings,
   ChevronLeft, ChevronRight, Trophy, Gavel, Clock,
-  Database, GraduationCap, Radio, X, LogOut,
+  Database, GraduationCap, Radio, X, LogOut, BookOpen, Award,
 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 
@@ -20,10 +20,12 @@ interface SidebarProps {
 const navItems = [
   { section: 'Overview' },
   { to: '/', icon: LayoutDashboard, label: 'Dashboard' },
-  { to: '/events', icon: Globe, label: 'All Events' },
+  { to: '/events', icon: Globe, label: 'All Opportunities' },
   { section: 'Discover' },
   { to: '/events?category=mun', icon: GraduationCap, label: 'MUN Conferences' },
   { to: '/events?category=parliamentary_debate,bp_debate,ap_debate,world_schools_debate,public_forum_debate,ld_debate,policy_debate,legal_debate', icon: Gavel, label: 'Debate Competitions' },
+  { to: '/events?category=workshop,bootcamp', icon: BookOpen, label: 'Workshops & Training' },
+  { to: '/events?category=case_competition,moot_court,quiz_competition,hackathon_policy,youth_parliament,public_speaking,extempore', icon: Award, label: 'Competitions & Challenges' },
   { to: '/closing-soon', icon: Clock, label: 'Closing Soon' },
   { to: '/calendar', icon: Calendar, label: 'Calendar' },
   { section: 'Personal' },
@@ -88,12 +90,33 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               );
             }
             const { to, icon: Icon, label } = item as { to: string; icon: typeof LayoutDashboard; label: string };
-            const isActive = to === '/'
-              ? location.pathname === '/'
-              : location.pathname + location.search === to || (location.pathname.startsWith(to.split('?')[0]) && to !== '/');
+
+            let isActive = false;
+            const currentParams = new URLSearchParams(location.search);
+            const currentCategory = currentParams.get('category');
+
+            if (to === '/') {
+              isActive = location.pathname === '/';
+            } else if (to === '/events') {
+              // "All Opportunities" is only active if on /events and no specific category filter is active
+              isActive = location.pathname === '/events' && !currentCategory;
+            } else if (to.startsWith('/events?category=')) {
+              if (location.pathname === '/events' && currentCategory) {
+                const targetParams = new URLSearchParams(to.split('?')[1]);
+                const targetCats = (targetParams.get('category') || '').split(',').filter(Boolean);
+                const currentCats = currentCategory.split(',').filter(Boolean);
+                // Active if the current category exactly matches or is a subset of this category group
+                isActive =
+                  currentCategory === targetParams.get('category') ||
+                  (currentCats.length > 0 && currentCats.every(c => targetCats.includes(c)));
+              }
+            } else {
+              const targetPath = to.split('?')[0];
+              isActive = location.pathname === targetPath || location.pathname.startsWith(targetPath + '/');
+            }
 
             return (
-              <NavLink
+              <Link
                 key={to}
                 to={to}
                 className={`nav-item ${isActive ? 'active' : ''}`}
@@ -101,7 +124,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
               >
                 <Icon className="nav-icon" size={20} />
                 <span className="sidebar-label">{label}</span>
-              </NavLink>
+              </Link>
             );
           })}
         </nav>

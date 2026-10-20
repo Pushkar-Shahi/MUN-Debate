@@ -82,10 +82,10 @@ export function EventsPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
-            All Events & Competitions
+            All Competitions, Workshops & Opportunities
           </h1>
           <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-            {total} opportunities discovered across Model UN, Parliamentary Debating, Youth Parliament, and Orator circuits
+            {total} opportunities discovered across Model UN, Debates, Training Workshops, Moot Courts, and Case Competitions
           </p>
         </div>
       </div>
@@ -101,7 +101,7 @@ export function EventsPage() {
 
       {/* Results Content */}
       {isLoading ? (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '18px' }}>
           {Array.from({ length: 6 }).map((_, i) => <EventCardSkeleton key={i} />)}
         </div>
       ) : events.length === 0 ? (
@@ -128,7 +128,7 @@ export function EventsPage() {
         </div>
       ) : viewMode === 'grid' ? (
         /* Grid View */
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '18px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(310px, 1fr))', gap: '18px' }}>
           {events.map(event => (
             <EventCard key={event.id} event={event} />
           ))}

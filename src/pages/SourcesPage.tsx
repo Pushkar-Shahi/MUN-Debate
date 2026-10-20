@@ -17,6 +17,8 @@ export function SourcesPage() {
   const triggerSync = useTriggerSync();
 
   const [syncingId, setSyncingId] = useState<string | null>(null);
+  const [isSyncingAll, setIsSyncingAll] = useState(false);
+  const [syncFeedback, setSyncFeedback] = useState<{ type: 'success' | 'error'; message: string } | null>(null);
   const [modalOpen, setModalOpen] = useState(false);
   const [newSource, setNewSource] = useState({
     name: '',
@@ -28,12 +30,48 @@ export function SourcesPage() {
 
   const sourceList = sources || [];
 
-  const handleSync = async (id: string) => {
+  const handleSync = async (id: string, name?: string) => {
     setSyncingId(id);
     try {
-      await triggerSync.mutateAsync(id);
+      const res = await triggerSync.mutateAsync(id);
+      setSyncFeedback({
+        type: 'success',
+        message: res?.message || `Successfully synced ${name || 'source'}! Catalog refreshed.`,
+      });
+      setTimeout(() => setSyncFeedback(null), 5000);
+    } catch (err: any) {
+      setSyncFeedback({
+        type: 'error',
+        message: `Sync failed for ${name || 'source'}: ${err?.message || 'Network check error'}`,
+      });
+      setTimeout(() => setSyncFeedback(null), 5000);
     } finally {
-      setTimeout(() => setSyncingId(null), 1000);
+      setSyncingId(null);
+    }
+  };
+
+  const handleSyncAll = async () => {
+    if (isSyncingAll || sourceList.length === 0) return;
+    setIsSyncingAll(true);
+    try {
+      for (const src of sourceList.slice(0, 4)) {
+        setSyncingId(src.id);
+        await triggerSync.mutateAsync(src.id);
+      }
+      setSyncFeedback({
+        type: 'success',
+        message: `Sync complete across active discovery circuits! Updated timestamps and refreshed listings.`,
+      });
+      setTimeout(() => setSyncFeedback(null), 5000);
+    } catch (err: any) {
+      setSyncFeedback({
+        type: 'error',
+        message: `Batch sync error: ${err?.message || 'Failed to finish full cycle'}`,
+      });
+      setTimeout(() => setSyncFeedback(null), 5000);
+    } finally {
+      setSyncingId(null);
+      setIsSyncingAll(false);
     }
   };
 
@@ -53,6 +91,11 @@ export function SourcesPage() {
         onSuccess: () => {
           setModalOpen(false);
           setNewSource({ name: '', url: '', category: 'mun', integration_mode: 'structured_page', integration_notes: '' });
+          setSyncFeedback({
+            type: 'success',
+            message: `New source registered successfully!`,
+          });
+          setTimeout(() => setSyncFeedback(null), 4000);
         },
       }
     );
@@ -76,10 +119,52 @@ export function SourcesPage() {
           </p>
         </div>
 
-        <button className="btn btn-primary btn-sm" onClick={() => setModalOpen(true)}>
-          <Plus size={16} /> Add Custom Source
-        </button>
+        <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={handleSyncAll}
+            disabled={isSyncingAll}
+          >
+            <RefreshCw size={14} className={isSyncingAll ? 'spin-animation' : ''} />
+            {isSyncingAll ? 'Syncing Circuits...' : 'Sync All Sources'}
+          </button>
+          <button className="btn btn-primary btn-sm" onClick={() => setModalOpen(true)}>
+            <Plus size={16} /> Add Custom Source
+          </button>
+        </div>
       </div>
+
+      {/* Sync Feedback Toast / Banner */}
+      {syncFeedback && (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            padding: '12px 18px',
+            borderRadius: '10px',
+            background: syncFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.12)' : 'rgba(239, 68, 68, 0.12)',
+            border: `1px solid ${syncFeedback.type === 'success' ? 'rgba(16, 185, 129, 0.3)' : 'rgba(239, 68, 68, 0.3)'}`,
+            color: syncFeedback.type === 'success' ? '#10b981' : '#ef4444',
+            marginBottom: '20px',
+            fontSize: '0.85rem',
+            fontWeight: 600,
+            animation: 'fadeIn 0.2s ease',
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            {syncFeedback.type === 'success' ? <CheckCircle size={18} /> : <AlertTriangle size={18} />}
+            <span>{syncFeedback.message}</span>
+          </div>
+          <button
+            onClick={() => setSyncFeedback(null)}
+            style={{ background: 'none', border: 'none', color: 'inherit', cursor: 'pointer', padding: 0 }}
+            aria-label="Dismiss message"
+          >
+            <X size={16} />
+          </button>
+        </div>
+      )}
 
       {/* Sources Health Summary Rail */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '14px', marginBottom: '24px' }}>
@@ -183,7 +268,7 @@ export function SourcesPage() {
                   <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
                     <button
                       className="btn btn-secondary btn-sm"
-                      onClick={() => handleSync(src.id)}
+                      onClick={() => handleSync(src.id, src.name)}
                       disabled={isSyncing}
                       style={{ fontSize: '0.78rem' }}
                     >

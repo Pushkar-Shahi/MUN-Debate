@@ -6,8 +6,10 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
+import { MobileBottomNav } from './MobileBottomNav';
 import { AddEventModal } from '../events/AddEventModal';
 import { EventDetailModal } from '../events/EventDetailModal';
+import { PwaInstallPrompt } from '../common/PwaInstallPrompt';
 
 export function AppLayout() {
   const [collapsed, setCollapsed] = useState(false);
@@ -35,6 +37,9 @@ export function AppLayout() {
         <main className="app-main-content">
           <Outlet context={{ openDetailModal: (id: string) => setSelectedEventId(id) }} />
         </main>
+
+        {/* Mobile PWA Bottom Navigation Dock */}
+        <MobileBottomNav />
       </div>
 
       {/* Add Event Modal */}
@@ -48,6 +53,9 @@ export function AppLayout() {
         eventId={selectedEventId}
         onClose={() => setSelectedEventId(null)}
       />
+
+      {/* PWA Install Promotion & Offline Radar */}
+      <PwaInstallPrompt />
     </div>
   );
 }

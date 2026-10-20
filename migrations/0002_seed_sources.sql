@@ -20,4 +20,9 @@ INSERT OR IGNORE INTO sources (id, name, url, category, integration_mode, health
   ('src_debaters_india', 'Debaters of India', 'https://debatersofindia.com/championships.html', 'debate', 'manual', 'manual_only', 3, 1, 'Championship listings for Indian debate community.'),
   ('src_speech_debate', 'Speech Debate India', 'https://www.speechdebateindia.com/tournaments', 'debate', 'manual', 'manual_only', 2, 1, 'Tournament listings for speech and debate in India.'),
   ('src_lawctopus', 'Lawctopus', 'https://lawctopus.com/', 'mixed', 'manual', 'manual_only', 3, 1, 'Legal opportunities platform. Includes debate, MUN, and competition listings among broader legal content.'),
-  ('src_harvard_debate', 'Harvard Debate India / WDC', 'https://www.harvarddebateindia.in/wdc2026', 'debate', 'manual', 'manual_only', 2, 1, 'World Debating Championship India page. Event-specific source.');
+  ('src_harvard_debate', 'Harvard Debate India / WDC', 'https://www.harvarddebateindia.in/wdc2026', 'debate', 'manual', 'manual_only', 2, 1, 'World Debating Championship India page. Event-specific source.'),
+  ('src_isds_workshops', 'ISDS Debate Academy & Clinics', 'https://indianschoolsdebatingsociety.com/workshops-calendar/', 'student_competition', 'structured_page', 'healthy', 1, 1, 'WSDC training clinics, adjudicator certification workshops, and national debater bootcamps.'),
+  ('src_mun_academy', 'Global MUN Training & RoP Clinics', 'https://mymun.com/training-masterclasses', 'mun', 'api', 'healthy', 1, 1, 'Rules of Procedure, resolution drafting, continuous crisis simulation, and delegate mastery.'),
+  ('src_national_moot_hub', 'National Moot & Mock Trial Circuit', 'https://lawctopus.com/moot-courts/', 'student_competition', 'structured_page', 'healthy', 2, 1, 'National appellate moots, international law simulations, and memorial drafting challenges.'),
+  ('src_case_policy_network', 'Policy & Case Competition Hub', 'https://unstop.com/case-competitions', 'student_competition', 'api', 'healthy', 1, 1, 'Public policy hackathons, governance innovation challenges, and collegiate consulting case tournaments.');
+

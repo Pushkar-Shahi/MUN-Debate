@@ -59,6 +59,11 @@ export function EventCard({ event, compact }: EventCardProps) {
                 {event.mode === 'online' ? '🌐 Online' : event.mode === 'hybrid' ? '🔄 Hybrid' : '📍 In-Person'}
               </span>
             )}
+            {event.certificates && (
+              <span className="badge" style={{ fontSize: '0.68rem', background: 'rgba(16, 185, 129, 0.12)', color: 'var(--color-status-open, #10b981)', border: '1px solid rgba(16, 185, 129, 0.25)' }}>
+                ✓ Certified
+              </span>
+            )}
           </div>
           <h3 className="event-card-title">{event.title}</h3>
         </div>
