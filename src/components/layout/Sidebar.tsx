@@ -66,7 +66,7 @@ export function Sidebar({ collapsed, onToggle, mobileOpen, onMobileClose }: Side
             <div className="sidebar-logo-icon">
               <Radio size={18} />
             </div>
-            <span className="sidebar-logo-text">MUN & Debate</span>
+            <span className="sidebar-logo-text">MUN & Debate Central</span>
           </div>
           {mobileOpen && (
             <button
