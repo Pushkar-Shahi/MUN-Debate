@@ -6,7 +6,7 @@ import { useState, useRef, useEffect } from 'react';
 import {
   Search, SlidersHorizontal, X, ArrowUpDown, LayoutGrid, List,
   Calendar, MapPin, Tag, Download, FileSpreadsheet, Check,
-  ChevronLeft, ChevronRight, Layers,
+  ChevronLeft, ChevronRight, Layers, Flame, Clock, Archive, ShieldCheck,
 } from 'lucide-react';
 import type { EventCategory, EventFilters, EventMode, RegistrationStatus, FeeStatus } from '../../types';
 import { CATEGORY_LABELS, LOCATION_PRESETS } from '../../types';
@@ -142,6 +142,80 @@ export function EventFiltersBar({
 
   return (
     <div className="filter-bar-container" style={{ marginBottom: '20px' }}>
+      {/* Circuit Feed Scope Bar */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '14px', flexWrap: 'wrap', gap: '10px' }}>
+        <div style={{ display: 'inline-flex', background: 'var(--color-bg-secondary)', padding: '4px', borderRadius: '10px', border: '1px solid var(--color-border-primary)', gap: '4px' }}>
+          <button
+            type="button"
+            className={`scope-pill ${(filters.scope === 'active' || !filters.scope) ? 'active' : ''}`}
+            onClick={() => onChange({ ...filters, scope: 'active', page: 1 })}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '7px',
+              border: 'none',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              background: (filters.scope === 'active' || !filters.scope) ? 'var(--color-accent-primary)' : 'transparent',
+              color: (filters.scope === 'active' || !filters.scope) ? '#ffffff' : 'var(--color-text-secondary)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Flame size={14} /> Active & Upcoming
+          </button>
+          <button
+            type="button"
+            className={`scope-pill ${filters.scope === 'closing_soon' ? 'active' : ''}`}
+            onClick={() => onChange({ ...filters, scope: 'closing_soon', page: 1 })}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '7px',
+              border: 'none',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              background: filters.scope === 'closing_soon' ? 'var(--color-accent-primary)' : 'transparent',
+              color: filters.scope === 'closing_soon' ? '#ffffff' : 'var(--color-text-secondary)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Clock size={14} /> Closing This Week
+          </button>
+          <button
+            type="button"
+            className={`scope-pill ${filters.scope === 'archived' ? 'active' : ''}`}
+            onClick={() => onChange({ ...filters, scope: 'archived', page: 1 })}
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+              padding: '6px 14px',
+              borderRadius: '7px',
+              border: 'none',
+              fontSize: '0.82rem',
+              fontWeight: 600,
+              cursor: 'pointer',
+              background: filters.scope === 'archived' ? 'var(--color-accent-primary)' : 'transparent',
+              color: filters.scope === 'archived' ? '#ffffff' : 'var(--color-text-secondary)',
+              transition: 'all 0.15s ease',
+            }}
+          >
+            <Archive size={14} /> Past & Concluded
+          </button>
+        </div>
+
+        <div style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--color-text-secondary)', background: 'var(--color-bg-secondary)', padding: '6px 12px', borderRadius: '8px', border: '1px solid var(--color-border-primary)' }}>
+          <ShieldCheck size={14} color="#10b981" />
+          <span>Automated Verification Active • Expired Items Filtered</span>
+        </div>
+      </div>
+
       {/* Search and Top Controls */}
       <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap', marginBottom: '14px' }}>
         <div style={{ position: 'relative', flex: '1 1 300px' }}>

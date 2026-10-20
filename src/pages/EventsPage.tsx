@@ -29,11 +29,13 @@ export function EventsPage() {
     const mode = searchParams.get('mode')?.split(',').filter(Boolean) as EventMode[];
     const search = searchParams.get('search') || undefined;
     const city = searchParams.get('city') || undefined;
+    const scope = (searchParams.get('scope') as any) || 'active';
     return {
       search,
       categories: cats?.length ? cats : undefined,
       mode: mode?.length ? mode : undefined,
       locations: city ? [city] : undefined,
+      scope,
       page: 1,
       limit: 12,
       sortBy: 'registration_deadline',
@@ -47,6 +49,7 @@ export function EventsPage() {
     const mode = searchParams.get('mode')?.split(',').filter(Boolean) as EventMode[];
     const search = searchParams.get('search') || undefined;
     const city = searchParams.get('city') || undefined;
+    const scope = (searchParams.get('scope') as any) || 'active';
 
     setFilters(prev => ({
       ...prev,
@@ -54,6 +57,7 @@ export function EventsPage() {
       categories: cats?.length ? cats : undefined,
       mode: mode?.length ? mode : undefined,
       locations: city ? [city] : undefined,
+      scope,
       page: 1,
     }));
   }, [searchParams]);
@@ -73,6 +77,7 @@ export function EventsPage() {
     if (newFilters.categories?.length) sp.set('category', newFilters.categories.join(','));
     if (newFilters.mode?.length) sp.set('mode', newFilters.mode.join(','));
     if (newFilters.locations?.length) sp.set('city', newFilters.locations.join(','));
+    if (newFilters.scope && newFilters.scope !== 'active') sp.set('scope', newFilters.scope);
     setSearchParams(sp, { replace: true });
   };
 
@@ -82,10 +87,16 @@ export function EventsPage() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '18px', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h1 style={{ fontSize: '1.45rem', fontWeight: 800, color: 'var(--color-text-primary)' }}>
-            All Competitions, Workshops & Opportunities
+            {filters.scope === 'archived'
+              ? 'Past & Concluded Circuit Opportunities'
+              : filters.scope === 'closing_soon'
+              ? 'Closing Soon — Urgent Registrations'
+              : 'Active Circuit Opportunities & Tournaments'}
           </h1>
           <p style={{ fontSize: '0.82rem', color: 'var(--color-text-secondary)', marginTop: '2px' }}>
-            {total} opportunities discovered across Model UN, Debates, Training Workshops, Moot Courts, and Case Competitions
+            {filters.scope === 'archived'
+              ? `${total} concluded competitions preserved for historical reference and circuit tracking`
+              : `${total} verified opportunities discovered across Model UN, Debates, Training Workshops, Moot Courts, and Case Competitions`}
           </p>
         </div>
       </div>

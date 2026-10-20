@@ -281,6 +281,17 @@ async function run() {
       const awards = extractPrizes(item.combined);
 
       const dDate = new Date(deadline);
+      // Pre-ingestion Verification Gate
+      if (isNaN(dDate.getTime()) || dDate.getTime() <= Date.now()) {
+        continue;
+      }
+
+      // Avoid Google News redirect links in catalog records
+      let eventUrl = item.link || 'https://lawctopus.com/';
+      if (eventUrl.includes('news.google.com')) {
+        eventUrl = 'https://lawctopus.com/';
+      }
+
       const eventStart = new Date(dDate.getTime() + 6 * 24 * 60 * 60 * 1000).toISOString();
       const eventEnd = new Date(dDate.getTime() + 8 * 24 * 60 * 60 * 1000).toISOString();
 
@@ -316,8 +327,8 @@ async function run() {
         fee_currency: 'INR',
         fee_status: fee.status,
         registration_status: 'open',
-        registration_url: item.link || 'https://lawctopus.com/',
-        official_event_url: item.link || 'https://lawctopus.com/',
+        registration_url: eventUrl,
+        official_event_url: eventUrl,
         committees: ['Championship Preliminary Rounds', 'Open Novice Break'],
         topics: ['Constitutional Law, Geopolitics & Public Policy Agendas'],
         awards,

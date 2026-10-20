@@ -268,6 +268,8 @@ export interface EventFilters {
   hasDeadline?: boolean;
   closingWithin?: number; // days
   savedOnly?: boolean;
+  scope?: 'active' | 'closing_soon' | 'archived' | 'all';
+  includeClosed?: boolean;
   page?: number;
   limit?: number;
   sortBy?: string;

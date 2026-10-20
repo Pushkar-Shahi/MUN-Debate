@@ -232,3 +232,27 @@ export function useMarkNotificationRead() {
     },
   });
 }
+
+// --- Data Verification & Circuit Integrity ---
+export function useVerificationSummary() {
+  return useQuery({
+    queryKey: ['verification-summary'],
+    queryFn: async () => {
+      const res = await api.fetchVerificationSummary();
+      return res.data;
+    },
+    refetchInterval: 30000,
+  });
+}
+
+export function useRunVerificationAudit() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: api.runFullVerificationAudit,
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['verification-summary'] });
+      qc.invalidateQueries({ queryKey: ['events'] });
+      qc.invalidateQueries({ queryKey: ['dashboard-stats'] });
+    },
+  });
+}

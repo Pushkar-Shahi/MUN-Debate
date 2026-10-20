@@ -64,6 +64,23 @@ export function EventCard({ event, compact }: EventCardProps) {
                 ✓ Certified
               </span>
             )}
+            {event.data_confidence === 'high' && (
+              <span
+                className="badge"
+                style={{
+                  fontSize: '0.68rem',
+                  background: 'rgba(56, 189, 248, 0.12)',
+                  color: 'var(--color-accent-primary, #38bdf8)',
+                  border: '1px solid rgba(56, 189, 248, 0.3)',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '3px',
+                }}
+                title="Verified against accredited circuit registry"
+              >
+                🛡️ Verified
+              </span>
+            )}
           </div>
           <h3 className="event-card-title">{event.title}</h3>
         </div>
