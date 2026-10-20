@@ -11,6 +11,7 @@ import {
 import { useDashboardStats, useEvents, useClosingSoon } from '../hooks';
 import { EventCard, EventCardSkeleton } from '../components/events/EventCard';
 import { formatDateShort, getCountdown } from '../utils';
+import { resolveSafeCircuitUrl } from '../services/dataVerifier';
 import type { EventCategory } from '../types';
 
 interface OutletContextType {
@@ -217,8 +218,10 @@ export function DashboardPage() {
                       className="btn btn-primary btn-sm"
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (event.registration_url || event.official_event_url) {
-                          window.open(event.registration_url || event.official_event_url!, '_blank', 'noopener,noreferrer');
+                        const raw = event.registration_url || event.official_event_url;
+                        if (raw) {
+                          const safeUrl = resolveSafeCircuitUrl(raw, event.primary_category);
+                          window.open(safeUrl, '_blank', 'noopener,noreferrer');
                         }
                       }}
                       style={{ fontSize: '0.75rem', padding: '4px 10px' }}

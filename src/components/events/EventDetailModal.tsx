@@ -13,7 +13,7 @@ import { CATEGORY_LABELS, STATUS_LABELS, TRACKING_LABELS } from '../../types';
 import { formatDate, getCountdown, getStatusBadgeClass, formatCurrency } from '../../utils';
 import { useSaveEvent, useUpdateSavedEvent, useDeleteSavedEvent, useEvent } from '../../hooks';
 import { downloadICS } from '../../services/api';
-import { extractDomain, isAccreditedDomain } from '../../services/dataVerifier';
+import { extractDomain, isAccreditedDomain, resolveSafeCircuitUrl } from '../../services/dataVerifier';
 
 interface EventDetailModalProps {
   eventId: string | null;
@@ -188,7 +188,11 @@ export function EventDetailModal({ eventId, onClose }: EventDetailModalProps) {
                   {(event.registration_url || event.official_event_url) && (
                     <button
                       className="btn btn-primary btn-sm"
-                      onClick={() => window.open(event.registration_url || event.official_event_url!, '_blank', 'noopener,noreferrer')}
+                      onClick={() => {
+                        const raw = event.registration_url || event.official_event_url;
+                        const safeUrl = resolveSafeCircuitUrl(raw, event.primary_category);
+                        window.open(safeUrl, '_blank', 'noopener,noreferrer');
+                      }}
                     >
                       <ExternalLink size={14} /> Register Now
                     </button>
@@ -465,7 +469,11 @@ export function EventDetailModal({ eventId, onClose }: EventDetailModalProps) {
                 <button
                   className="btn btn-primary"
                   style={{ flex: 1.5 }}
-                  onClick={() => window.open(event.registration_url || event.official_event_url!, '_blank', 'noopener,noreferrer')}
+                  onClick={() => {
+                    const raw = event.registration_url || event.official_event_url;
+                    const safeUrl = resolveSafeCircuitUrl(raw, event.primary_category);
+                    window.open(safeUrl, '_blank', 'noopener,noreferrer');
+                  }}
                 >
                   <ExternalLink size={16} /> Open Registration Portal
                 </button>

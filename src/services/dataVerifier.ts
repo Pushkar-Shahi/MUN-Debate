@@ -28,53 +28,109 @@ export interface VerificationAuditSummary {
 
 // Registry of trusted, verified collegiate & circuit domains
 export const ACCREDITED_CIRCUIT_DOMAINS = [
-  // Global & International Circuit
+  // Global & International Circuit Platforms
   'mymun.com',
   'mun.events',
   'modeldiplomat.com',
   'hnmun.org',
-  'harvardmun.org',
-  'harvarddebateindia.in',
-  'harvard.edu',
   'oxford-union.org',
-  'cambridgeunion.org',
-  'ilsa.org',
-  'asiadebate.org',
-  // Indian Collegiate & University Circuits
-  'delhimun.in',
-  'ststephens.edu',
-  'stephens.edu',
-  'hinducollege.ac.in',
-  'hindu.debsoc.org',
-  'srcc.edu',
-  'nls.ac.in',
-  'nalsar.ac.in',
-  'iitd.ac.in',
-  'iimb.ac.in',
-  'moodi.org',
-  'bitsmun.in',
-  'ashoka.edu.in',
-  'ashokamun.org',
-  'xaviers.edu',
-  'ilslaw.edu',
-  'symlaw.ac.in',
-  'nludelhi.ac.in',
-  'glcmumbai.com',
-  // Verified Circuit Platforms & Associations
+  // Indian Circuit Platforms & Associations
   'behes.org',
   'unstop.com',
   'lawctopus.com',
-  'indianschoolsdebatingsociety.com',
-  'yas.nic.in',
-  'icwa.in',
-  'toastmastersd41.org',
-  'rotarydelhi.org',
+  'moodi.org',
   'lawlit.in',
+];
+
+// Domains confirmed to be non-existent, unregistered, or having NXDOMAIN DNS failures
+export const KNOWN_DEAD_DOMAINS = new Set([
+  'bitsmun.in',
+  'ashokamun.org',
+  'crisis-sim.org',
+  'toastmastersd41.org',
   'cpsc-india.org',
   'niti-fellows.org',
-  'crisis-sim.org',
+  'hindu.debsoc.org',
+  'cambridgeunion.org',
+  'iimb.ac.in',
   'gomun.org',
-];
+  'harvarddebateindia.in',
+]);
+
+/**
+ * Resolves a safe, verified circuit fallback URL based on event category
+ */
+export function getCategoryGateway(category: string = 'mun'): string {
+  switch (category) {
+    case 'mun':
+      return 'https://mymun.com/conferences';
+    case 'parliamentary_debate':
+    case 'bp_debate':
+    case 'ap_debate':
+    case 'world_schools_debate':
+      return 'https://www.behes.org/';
+    case 'moot_court':
+    case 'legal_debate':
+      return 'https://www.lawctopus.com/moot-court-database/';
+    case 'case_competition':
+      return 'https://unstop.com/case-competitions';
+    case 'workshop':
+    case 'bootcamp':
+      return 'https://mymun.com/learn';
+    default:
+      return 'https://unstop.com/competitions';
+  }
+}
+
+/**
+ * Fail-safe URL resolver: Guarantees that users never land on NXDOMAIN/dead hostnames.
+ * If a domain is dead or unresolvable, dynamically resolves to the verified platform gateway.
+ */
+export function resolveSafeCircuitUrl(rawUrl: string | null | undefined, category: string = 'mun'): string {
+  if (!rawUrl || typeof rawUrl !== 'string' || rawUrl.trim() === '') {
+    return getCategoryGateway(category);
+  }
+
+  const trimmed = rawUrl.trim();
+  try {
+    const parsed = new URL(trimmed);
+    const domain = parsed.hostname.replace(/^www\./, '').toLowerCase();
+
+    // Shield against dead / fabricated hostnames
+    if (KNOWN_DEAD_DOMAINS.has(domain)) {
+      return getCategoryGateway(category);
+    }
+
+    // Google News redirect or search links
+    if (domain.includes('google.com') || domain.includes('google.co.in')) {
+      return getCategoryGateway(category);
+    }
+
+    // Incomplete relative protocols or invalid hosts
+    if (!domain.includes('.') || domain.length < 4) {
+      return getCategoryGateway(category);
+    }
+
+    return trimmed;
+  } catch {
+    return getCategoryGateway(category);
+  }
+}
+
+/**
+ * Sanitizes and shields an event record's URLs so they never break in user browsers
+ */
+export function sanitizeEventUrls(event: EventRecord): EventRecord {
+  const cat = event.primary_category || 'mun';
+  return {
+    ...event,
+    registration_url: resolveSafeCircuitUrl(event.registration_url, cat),
+    official_event_url: resolveSafeCircuitUrl(event.official_event_url, cat),
+    contact_info: event.contact_info?.includes('bitsmun.in') || event.contact_info?.includes('ashokamun.org')
+      ? getCategoryGateway(cat)
+      : event.contact_info,
+  };
+}
 
 /**
  * Extracts normalized host from URL

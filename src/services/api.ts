@@ -15,6 +15,7 @@ import { executeSourceCrawl } from '../../worker/crawler';
 import { CURRENT_USER_ID_KEY } from '../context/AuthContext';
 import {
   verifyEvent, verifyAllEvents, applyLifecycleStatus, selfHealShowcaseEvents,
+  sanitizeEventUrls, resolveSafeCircuitUrl,
   type VerificationAuditSummary, type VerificationResult,
 } from './dataVerifier';
 
@@ -33,9 +34,9 @@ function getUserId(): string {
 function getStorageKeys() {
   const uid = getUserId();
   return {
-    EVENTS: 'mun_debate_events_v2', // global — shared across users (v2 clean seed)
-    SOURCES: 'mun_debate_sources_v2', // global
-    SYNC_RUNS: 'mun_debate_sync_runs_v2', // global
+    EVENTS: 'mun_debate_events_v4', // global — shared across users (v4 clean verified URLs)
+    SOURCES: 'mun_debate_sources_v3', // global
+    SYNC_RUNS: 'mun_debate_sync_runs_v3', // global
     SAVED: `mun_debate_saved_v1_${uid}`, // per-user
     NOTIFICATIONS: `mun_debate_notifications_v1_${uid}`, // per-user
     PREFS: `mun_debate_prefs_v1_${uid}`, // per-user
@@ -99,8 +100,9 @@ function initStore(): {
 
   // Apply automated verification scoring and lifecycle status
   events = events.map(e => {
-    const vRes = verifyEvent(e, new Date());
-    const withLifecycle = applyLifecycleStatus(e, new Date());
+    const sanitized = sanitizeEventUrls(e);
+    const vRes = verifyEvent(sanitized, new Date());
+    const withLifecycle = applyLifecycleStatus(sanitized, new Date());
     return {
       ...withLifecycle,
       data_confidence: vRes.confidence,
@@ -279,9 +281,9 @@ export async function fetchEvents(filters: EventFilters = {}): Promise<Paginated
     const store = initStore();
     let list = [...store.events];
 
-    // Recalculate dynamic lifecycle status relative to real clock
+    // Recalculate dynamic lifecycle status relative to real clock and shield URLs
     const now = new Date();
-    list = list.map(e => applyLifecycleStatus(e, now));
+    list = list.map(e => sanitizeEventUrls(applyLifecycleStatus(e, now)));
 
     // Join saved status
     const savedMap = new Map(store.saved.map(s => [s.event_id, s]));
@@ -407,8 +409,9 @@ export async function fetchEvent(id: string): Promise<{ success: boolean; data: 
     return await request(`/events/${id}`);
   } catch {
     const store = initStore();
-    const event = store.events.find(e => e.id === id);
-    if (!event) throw new Error('Event not found');
+    const rawEvent = store.events.find(e => e.id === id);
+    if (!rawEvent) throw new Error('Event not found');
+    const event = sanitizeEventUrls(applyLifecycleStatus(rawEvent, new Date()));
     const saved = store.saved.find(s => s.event_id === id) || null;
     return {
       success: true,

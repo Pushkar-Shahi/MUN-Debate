@@ -12,6 +12,7 @@ import { useCalendarEvents } from '../hooks';
 import { getCalendarDays, formatDate, formatDateShort, format, isToday } from '../utils';
 import { CATEGORY_LABELS } from '../types';
 import { downloadICS } from '../services/api';
+import { resolveSafeCircuitUrl } from '../services/dataVerifier';
 
 export function CalendarPage() {
   const navigate = useNavigate();
@@ -289,7 +290,11 @@ export function CalendarPage() {
                           className="btn btn-primary btn-sm"
                           onClick={(e) => {
                             e.stopPropagation();
-                            window.open(event.registration_url || event.official_event_url!, '_blank', 'noopener,noreferrer');
+                            const raw = event.registration_url || event.official_event_url;
+                            if (raw) {
+                              const safeUrl = resolveSafeCircuitUrl(raw, event.primary_category);
+                              window.open(safeUrl, '_blank', 'noopener,noreferrer');
+                            }
                           }}
                           style={{ fontSize: '0.72rem', padding: '3px 8px' }}
                         >

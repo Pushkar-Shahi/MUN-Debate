@@ -10,6 +10,7 @@ import {
 import { CATEGORY_LABELS, STATUS_LABELS, type EventRecord } from '../../types';
 import { formatDate, getCountdown, getStatusBadgeClass, formatCurrency } from '../../utils';
 import { useSaveEvent, useDeleteSavedEvent } from '../../hooks';
+import { resolveSafeCircuitUrl } from '../../services/dataVerifier';
 
 interface EventCardProps {
   event: EventRecord & { saved_status?: string; saved_id?: string };
@@ -35,7 +36,8 @@ export function EventCard({ event, compact }: EventCardProps) {
 
   const handleRegister = (e: React.MouseEvent) => {
     e.stopPropagation();
-    const url = event.registration_url || event.official_event_url;
+    const raw = event.registration_url || event.official_event_url;
+    const url = resolveSafeCircuitUrl(raw, event.primary_category);
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
   };
 
