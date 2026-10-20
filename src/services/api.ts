@@ -29,9 +29,9 @@ function getUserId(): string {
 function getStorageKeys() {
   const uid = getUserId();
   return {
-    EVENTS: 'mun_debate_events_v1', // global — shared across users
-    SOURCES: 'mun_debate_sources_v1', // global
-    SYNC_RUNS: 'mun_debate_sync_runs_v1', // global
+    EVENTS: 'mun_debate_events_v2', // global — shared across users (v2 clean seed)
+    SOURCES: 'mun_debate_sources_v2', // global
+    SYNC_RUNS: 'mun_debate_sync_runs_v2', // global
     SAVED: `mun_debate_saved_v1_${uid}`, // per-user
     NOTIFICATIONS: `mun_debate_notifications_v1_${uid}`, // per-user
     PREFS: `mun_debate_prefs_v1_${uid}`, // per-user
@@ -66,20 +66,44 @@ function initStore(): {
 } {
   const keys = getStorageKeys();
   let events = getStorage<EventRecord[]>(keys.EVENTS, INITIAL_EVENTS);
+
+  // Synchronize with INITIAL_EVENTS so updated dates, titles, and verified source links take immediate effect
+  const initialMap = new Map(INITIAL_EVENTS.map(e => [e.id, e]));
+  events = events.map(e => {
+    const fresh = initialMap.get(e.id);
+    if (fresh) {
+      return { ...fresh };
+    }
+    return e;
+  });
+
   const existingIds = new Set(events.map(e => e.id));
   const newEvents = INITIAL_EVENTS.filter(e => !existingIds.has(e.id));
   if (newEvents.length > 0) {
     events = [...events, ...newEvents];
-    setStorage(keys.EVENTS, events);
   }
 
+  // Remove any stale dummy entries with Google News redirects or internships
+  events = events.filter(e => {
+    const isGoogleRedirect = (e.official_event_url || '').includes('news.google.com') || (e.registration_url || '').includes('news.google.com');
+    const isInternship = e.id.includes('tuve3kz') || e.title.toLowerCase().includes('internship');
+    return !isGoogleRedirect && !isInternship;
+  });
+
+  setStorage(keys.EVENTS, events);
+
   let sources = getStorage<Source[]>(keys.SOURCES, INITIAL_SOURCES);
+  const initialSourcesMap = new Map(INITIAL_SOURCES.map(s => [s.id, s]));
+  sources = sources.map(s => {
+    const fresh = initialSourcesMap.get(s.id);
+    return fresh ? { ...fresh } : s;
+  });
   const existingSourceIds = new Set(sources.map(s => s.id));
   const newSources = INITIAL_SOURCES.filter(s => !existingSourceIds.has(s.id));
   if (newSources.length > 0) {
     sources = [...sources, ...newSources];
-    setStorage(keys.SOURCES, sources);
   }
+  setStorage(keys.SOURCES, sources);
 
   let saved = getStorage<SavedEvent[]>(keys.SAVED, INITIAL_SAVED_EVENTS);
   const existingSavedIds = new Set(saved.map(s => s.id));

@@ -107,19 +107,24 @@ function extractDeadline(text) {
   const months = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
   const regex = /(?:register by|deadline[:\s]+|submit by|apply by|last date[:\s]+)\s*([a-z]+)\s*(\d{1,2})/i;
   const match = text.match(regex);
+  const now = new Date();
   if (match) {
     const monthStr = match[1].toLowerCase().slice(0, 3);
     const mIdx = months.indexOf(monthStr);
     const day = parseInt(match[2], 10);
     if (mIdx !== -1 && day >= 1 && day <= 31) {
-      const year = 2026;
-      const d = new Date(Date.UTC(year, mIdx, day, 18, 29, 59));
-      return d.toISOString();
+      let year = now.getFullYear();
+      let d = new Date(Date.UTC(year, mIdx, day, 18, 29, 59));
+      if (d.getTime() < now.getTime()) {
+        d = new Date(Date.UTC(year + 1, mIdx, day, 18, 29, 59));
+      }
+      if (d.getTime() > now.getTime()) {
+        return d.toISOString();
+      }
     }
   }
 
   // Fallback: 14 to 28 days in future
-  const now = new Date();
   const daysOffset = 14 + Math.floor(Math.random() * 14);
   const future = new Date(now.getTime() + daysOffset * 24 * 60 * 60 * 1000);
   return future.toISOString();
@@ -196,7 +201,11 @@ async function fetchRssItems(feedUrl) {
         combined.includes(' university wins ') ||
         combined.includes(' adjudged winner ') ||
         combined.includes(' concludes with ') ||
-        combined.includes(' concluded ')
+        combined.includes(' concluded ') ||
+        combined.includes('internship') ||
+        combined.includes('fellowship') ||
+        combined.includes('job opening') ||
+        combined.includes('call for chapters')
       ) {
         continue;
       }
